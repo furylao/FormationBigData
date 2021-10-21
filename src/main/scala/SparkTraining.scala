@@ -190,6 +190,7 @@ object SparkTraining {
     val df_mysql2 = sparkSession.read
       .format("jdbc")
       .option("url", "jdbc:mysql://127.0.0.1:3306?zeroDateTimeBehavior=CONVERT_TO_NULL&serverTimezone=UTC")
+      .option("driver", "com.mysql.cj.jdbc.Driver")
       .option("user", "consultant")
       .option("password", "pwd#86")
       .option("dbtable", "(select state, city, sum(round(numunits * totalprice)) as commandes_totales from jea_db.orders group by state, city) requete")
