@@ -1,4 +1,4 @@
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.catalyst.expressions.NamePlaceholder.nullable
 import org.apache.spark.sql.catalyst.plans.JoinType
 import org.apache.spark.sql.functions.{col, lit, when}
@@ -176,7 +176,7 @@ object SparkTraining {
 
     //union + calcul
    // val df_kpi = df_union.groupBy(col("state")).sum("totalprice")
-
+    //
     //Connect to database
 //    val df_mysql1 = sparkSession.read
 //      .format("jdbc")
@@ -199,10 +199,61 @@ object SparkTraining {
    // df_mysql1.show()
 
     //Ecriture sur un fichier à partir d'un dataframe(Generation de plusieurs fichiers (._SUCCESS, .part, .csv,SUCCESS )
-    df_mysql2.write
+//    df_mysql2.write
+//      .format("com.databricks.spark.csv")
+//      .option("header","true")
+//      .csv(*/"C:\\Formation\\tableMysql.csv")
+
+    //Ecriture sur un fichier (ou plusieurs en fonction du nombre de processus spécifier à l'initialisation de la session spark avec l'option .master
+    //
+    //      .master("local[*]") équivalent au nombre de coeur du processeur
+    //
+    // ) à partir d'un dataframe(Generation de plusieurs fichiers (._SUCCESS, .part, .csv,SUCCESS )
+   /* dforders.write
       .format("com.databricks.spark.csv")
       .option("header","true")
-      .csv("C:\\Formation\\tableMysql.csv")
+      .option("delimiter",";")
+      .mode(SaveMode.Overwrite)
+      .csv("C:\\Formation\\tableMysql")
 
+    dforderline.write
+      .format("parquet")
+      .option("header","true")
+      .option("compression", "snappy")
+      .mode(SaveMode.Overwrite)
+      .save("C:\\Formation\\tableOrderLineParquet")
+
+    //spécification du nombre de processus avec .repartition sur le dataframe qui permet d'utiliser l'absraction des blocs RDD
+    // et ainsi optimiser les traitements au lieu du shuffle qui deplace les partitions de données vers le noeud de calcul
+    //attention le nombre de repartition ne peut être supérieur au nombre de processus(processeurs)
+    dforderline.repartition(1)
+      .write
+      .format("orc")
+      .option("compression", "snappy")
+      .option("header","true")
+      .mode(SaveMode.Overwrite)
+      .save("C:\\Formation\\tableOrderLineOrc")
+
+    //rename output file and delete generated files from spark
+    import org.apache.hadoop.fs._;
+
+    val fs = FileSystem.get(sparkSession.sparkContext.hadoopConfiguration);
+
+    val file = fs.globStatus(new Path("C:\\Formation\\tableMysql\\part*"))(0).getPath().getName();
+
+    fs.rename(new Path("C:/Formation/tableMysql/" + file), new Path("C:/Formation/tableMysql/mydata.csv"));
+
+    fs.delete(new Path("C:/Formation/tableMysql/mydata.csv-temp"), true);
+
+    //decouper les fichier par paramètre/champ
+    dforders.repartition(1)
+      .write
+      .partitionBy("city")
+      .format("orc")
+      .option("compression", "snappy")
+      .option("header","true")
+      .mode(SaveMode.Overwrite)
+      .save("C:\\Formation\\tableOrdersOrc")
+*/
   }
 }
